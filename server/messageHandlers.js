@@ -2,29 +2,48 @@ let db = null;
 let storage = null
 
 function getRequestContentValue(ctx) {
+  const contentType = ctx.request.header['content-type'];
 
-  switch (ctx.request.header['content-type']) {
-    case 'text/plain':
-      return {text: ctx.request.body, name: null, href: null};
-    default:
-      return {
-        text: null,
-        name: ctx.request.header['x-file-name'] || null,
-        href: `/api/content/${storage.putData(ctx.rawRequestBody, ctx.request.header['content-type'])}`
-      };
-  }
+    const body = contentType.startsWith('text/')
+      ? ctx.request.body
+      : ctx.rawRequestBody;
+
+    return {
+      text: ctx.request.header['x-file-describe'] || null,
+      name: ctx.request.header['x-file-name'] || null,
+      href: `/api/content/${storage.putData(body, contentType)}`
+    };
+
 }
 
-
-function createNewMsg(ctx) {
-  const content = getRequestContentValue(ctx) || "error"; /// Check clients data, send response 400?
+function createNewFileMsg(ctx) {
+  const content = getRequestContentValue(ctx)
   const message = {
     content: content,
     type: ctx.request.header['content-type'],
   };
   //console.log(message)
   const saveMsg = db.createSaveMsg(message)
-  console.log('saveMsg', saveMsg)
+  //console.log('saveMsg', saveMsg)
+  if (!saveMsg) {
+    ctx.response.status = 500;
+    ctx.response.body = 'Message is not create';
+    return;
+  }
+
+  ctx.response.body = JSON.stringify(saveMsg);
+}
+
+function createNewTextMsg(ctx) {
+  //console.log(ctx.request)
+  const content = {text: ctx.request.body, name: null, href: null}
+  const message = {
+    content: content,
+    type: ctx.request.header['content-type'],
+  };
+  //console.log(message)
+  const saveMsg = db.createSaveMsg(message)
+  //console.log('saveMsg', saveMsg)
   if (!saveMsg) {
     ctx.response.status = 500;
     ctx.response.body = 'Message is not create';
@@ -96,7 +115,8 @@ module.exports = function (router, database, fileStorage) {
   router.put('/api/messages/pin', putPinMsg);
   //router.get('/api/messages/by_type', getListMsgBySearchElem);
   //router.get('/api/messages/by_type/:type', getMsgList);
-  router.post('/api/messages', createNewMsg);
+  router.post('/api/messages/text', createNewTextMsg);
+  router.post('/api/messages/file', createNewFileMsg);
   //router.put('/api/messages/:id', updateMsg);
   router.delete('/api/messages/pin', deletePinMsg);
 }

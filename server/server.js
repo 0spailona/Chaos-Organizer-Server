@@ -15,7 +15,7 @@ const app = new Koa();
 app.use(cors());
 app.use(function* (next) {
   const type = this.req.headers["content-type"];
-  if (type !== 'text/plain' && type !== 'application/json') {
+  if (!type.startsWith('text/') && type !== 'application/json') {
     this.rawRequestBody = yield rawBody(this.req);
   }
   yield next
@@ -23,6 +23,8 @@ app.use(function* (next) {
 
 app.use(koaBody({
   includeUnparsed: true,
+  urlencoded: false,
+  json: false,
 }));
 
 const router = new Router()
