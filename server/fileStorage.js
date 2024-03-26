@@ -13,12 +13,13 @@ class FileStorage {
     return {contentPath: `${this.path}/${name}`, typePath: `${this.path}/${name}.type`};
   }
 
-  putData(content, type) {
+  putData(content, type,name) {
 
-    const name = uuid.v4();
-    fs.writeFileSync(`${this.path}/${name}`, content);
-    fs.writeFileSync(`${this.path}/${name}.type`, type, "utf-8")
-    return name
+    const id = uuid.v4();
+    const data = JSON.stringify({type,name})
+    fs.writeFileSync(`${this.path}/${id}`, content);
+    fs.writeFileSync(`${this.path}/${id}.meta`, data, "utf-8")
+    return id
   }
 
   getData(name) {

@@ -45,7 +45,7 @@ class DataBase {
     return this.data.pin
   }
 
-  deletePinMsg(){
+  deletePinMsg() {
     this.data.pin = null;
     this.saveData()
     return this.data.pin;
@@ -54,6 +54,7 @@ class DataBase {
   getLastMsgList(start, limit, text, type, favorite) {
 
     let arr = Object.values(this.data.messages);
+    if (arr.length === 0) return arr;
 
     if (text) arr = arr.filter(x => x.content.text?.includes(text));
 

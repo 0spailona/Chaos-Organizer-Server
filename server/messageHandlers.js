@@ -8,15 +8,23 @@ function getRequestContentValue(ctx) {
       ? ctx.request.body
       : ctx.rawRequestBody;
 
+    const name = ctx.request.header['x-file-name']
+
     return {
-      text: ctx.request.header['x-file-describe'] || null,
-      name: ctx.request.header['x-file-name'] || null,
-      href: `/api/content/${storage.putData(body, contentType)}`
+      text: ctx.request.header['x-file-describe']||null,
+      name: name,
+      href: `/api/content/${storage.putData(body, contentType, name)}`
     };
 
 }
 
 function createNewFileMsg(ctx) {
+ /* if(!ctx.request.header['x-file-describe'] || !ctx.request.header['x-file-name']){
+    ctx.response.status = 400;
+    ctx.response.body = 'Message must have name and description in request.headers';
+    return;
+  }*/
+
   const content = getRequestContentValue(ctx)
   const message = {
     content: content,
@@ -54,8 +62,9 @@ function createNewTextMsg(ctx) {
 }
 
 function getLastMsgList(ctx) {
-  const start = ctx.query.start || 0;
-  const limit = ctx.query.limit || 10;
+  const start = ctx.query.start;
+  const limit = ctx.query.limit;
+  console.log('start',start,'limit',limit)
   const text = ctx.query.text;
   const type = ctx.query.type;
   const favorite = ctx.query.favorite;

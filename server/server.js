@@ -15,7 +15,7 @@ const app = new Koa();
 app.use(cors());
 app.use(function* (next) {
   const type = this.req.headers["content-type"];
-  if (!type.startsWith('text/') && type !== 'application/json') {
+  if (type && !type.startsWith('text/') && type !== 'application/json') {
     this.rawRequestBody = yield rawBody(this.req);
   }
   yield next
