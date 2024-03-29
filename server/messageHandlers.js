@@ -11,19 +11,19 @@ function getRequestContentValue(ctx) {
     const name = ctx.request.header['x-file-name']
 
     return {
-      text: ctx.request.header['x-file-describe']||null,
+      text: ctx.request.header['x-file-describe'],
       name: name,
-      href: `/api/content/${storage.putData(body, contentType, name)}`
+      id: `${storage.putData(body, contentType, name)}`
     };
 
 }
 
 function createNewFileMsg(ctx) {
- /* if(!ctx.request.header['x-file-describe'] || !ctx.request.header['x-file-name']){
+  if(!ctx.request.header['x-file-describe'] || !ctx.request.header['x-file-name']){
     ctx.response.status = 400;
     ctx.response.body = 'Message must have name and description in request.headers';
     return;
-  }*/
+  }
 
   const content = getRequestContentValue(ctx)
   const message = {
@@ -78,6 +78,17 @@ function getLastMsgList(ctx) {
   ctx.response.body = JSON.stringify(list)
 }
 
+function toFavorite(ctx){
+  const id = ctx.params.id;
+  if(!db.toFavorite(id)){
+    ctx.response.status = 500;
+    ctx.response.body = 'Message with this id is not found';
+    return
+  }
+  ctx.response.body = 'ok';
+}
+
+
 function getPinMsg(ctx) {
 const pin = db.getPinMsg();
   if (!pin) {
@@ -120,14 +131,15 @@ module.exports = function (router, database, fileStorage) {
   storage = fileStorage;
 
   router.get('/api/messages', getLastMsgList);
-  router.get('/api/messages/pin', getPinMsg);
-  router.put('/api/messages/pin', putPinMsg);
+  //router.get('/api/messages/pin', getPinMsg);
+  //router.put('/api/messages/pin', putPinMsg);
   //router.get('/api/messages/by_type', getListMsgBySearchElem);
   //router.get('/api/messages/by_type/:type', getMsgList);
   router.post('/api/messages/text', createNewTextMsg);
   router.post('/api/messages/file', createNewFileMsg);
   //router.put('/api/messages/:id', updateMsg);
-  router.delete('/api/messages/pin', deletePinMsg);
+  router.patch('/api/messages/:id', toFavorite);
+  //router.delete('/api/messages/pin', deletePinMsg);
 }
 
 

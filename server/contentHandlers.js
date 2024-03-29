@@ -2,13 +2,15 @@ let db = null;
 let storage = null;
 
 function getContent(ctx) {
-  const {type, content} = storage.getData(ctx.params.id);
+  console.log('params',ctx.params.id)
+  const {meta, content} = storage.getData(ctx.params.id);
   if (!content) {
     ctx.response.status = 404;
     ctx.response.body = 'Content is not found';
     return;
   }
-  ctx.set('Content-type', type)
+  ctx.set('content-type', meta.type);
+  ctx.set('content-disposition', `attachment; filename=${meta.name}`, )
   ctx.response.body = content;
 }
 

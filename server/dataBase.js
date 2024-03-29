@@ -68,6 +68,12 @@ class DataBase {
     return saveDataSorted.splice(start, limit)
   }
 
+  toFavorite(id) {
+   if(!this.data.messages[id]) return false
+    this.data.messages[id].isFavorite = true;
+    this.saveData()
+   return true
+  }
 
   getOneMsg(id) {
     return this.data.messages[id]

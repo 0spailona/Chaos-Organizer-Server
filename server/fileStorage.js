@@ -10,7 +10,7 @@ class FileStorage {
   }
 
   getPath(name) {
-    return {contentPath: `${this.path}/${name}`, typePath: `${this.path}/${name}.type`};
+    return {contentPath: `${this.path}/${name}`, typePath: `${this.path}/${name}.meta`};
   }
 
   putData(content, type,name) {
@@ -22,17 +22,18 @@ class FileStorage {
     return id
   }
 
-  getData(name) {
-    console.log('name', name)
-    const {contentPath, typePath} = this.getPath(name);
+  getData(id) {
+    console.log('id', id)
+    const {contentPath, typePath} = this.getPath(id);
 
     if (!fs.existsSync(contentPath) || !fs.existsSync(typePath)) return null
 
-    const content = fs.readFileSync(`${this.path}/${name}`);
-    const type = fs.readFileSync(`${this.path}/${name}.type`, "utf-8");
-    console.log('type', type)
+    const content = fs.readFileSync(`${this.path}/${id}`);
+    const meta = JSON.parse(fs.readFileSync(`${this.path}/${id}.meta`, "utf-8"));
 
-    return {type, content}
+    console.log('meta', meta)
+
+    return {meta, content}
   }
 
   deleteData(name) {
