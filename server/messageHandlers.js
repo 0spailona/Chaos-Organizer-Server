@@ -64,7 +64,7 @@ function createNewTextMsg(ctx) {
 function getLastMsgList(ctx) {
   const start = ctx.query.start;
   const limit = ctx.query.limit;
-  console.log('start',start,'limit',limit)
+ // console.log('start',start,'limit',limit)
   const text = ctx.query.text;
   const type = ctx.query.type;
   const favorite = ctx.query.favorite;
@@ -100,13 +100,13 @@ const pin = db.getPinMsg();
 }
 
 function putPinMsg(ctx) {
-  const id = ctx.request.body.id;
+  const id = ctx.request.body
   if (!id) {
     ctx.response.status = 400;
     ctx.response.body = 'Id was not found';
     return;
   }
-  console.log('id pin', id)
+  //console.log('id pin', id)
   const pin = db.putPinMsg(id);
   if (!pin) {
     ctx.response.status = 500;
@@ -132,7 +132,7 @@ module.exports = function (router, database, fileStorage) {
 
   router.get('/api/messages', getLastMsgList);
   //router.get('/api/messages/pin', getPinMsg);
-  //router.put('/api/messages/pin', putPinMsg);
+  router.put('/api/messages/pin', putPinMsg);
   //router.get('/api/messages/by_type', getListMsgBySearchElem);
   //router.get('/api/messages/by_type/:type', getMsgList);
   router.post('/api/messages/text', createNewTextMsg);
