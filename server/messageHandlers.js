@@ -4,22 +4,22 @@ let storage = null
 function getRequestContentValue(ctx) {
   const contentType = ctx.request.header['content-type'];
 
-    const body = contentType.startsWith('text/')
-      ? ctx.request.body
-      : ctx.rawRequestBody;
+  const body = contentType.startsWith('text/')
+    ? ctx.request.body
+    : ctx.rawRequestBody;
 
-    const name = ctx.request.header['x-file-name']
+  const name = ctx.request.header['x-file-name']
 
-    return {
-      text: ctx.request.header['x-file-describe'],
-      name: name,
-      id: `${storage.putData(body, contentType, name)}`
-    };
+  return {
+    text: ctx.request.header['x-file-describe'],
+    name: name,
+    id: `${storage.putData(body, contentType, name)}`
+  };
 
 }
 
 function createNewFileMsg(ctx) {
-  if(!ctx.request.header['x-file-describe'] || !ctx.request.header['x-file-name']){
+  if (!ctx.request.header['x-file-describe'] || !ctx.request.header['x-file-name']) {
     ctx.response.status = 400;
     ctx.response.body = 'Message must have name and description in request.headers';
     return;
@@ -44,7 +44,7 @@ function createNewFileMsg(ctx) {
 
 function createNewTextMsg(ctx) {
   //console.log(ctx.request)
-  const content = {text: ctx.request.body, name: null, href: null}
+  const content = {text: ctx.request.body, name: null, id: null}
   const message = {
     content: content,
     type: ctx.request.header['content-type'],
@@ -64,7 +64,7 @@ function createNewTextMsg(ctx) {
 function getLastMsgList(ctx) {
   const start = ctx.query.start;
   const limit = ctx.query.limit;
- // console.log('start',start,'limit',limit)
+  // console.log('start',start,'limit',limit)
   const text = ctx.query.text;
   const type = ctx.query.type;
   const favorite = ctx.query.favorite;
@@ -78,9 +78,9 @@ function getLastMsgList(ctx) {
   ctx.response.body = JSON.stringify(list)
 }
 
-function toFavorite(ctx){
+function toFavorite(ctx) {
   const id = ctx.params.id;
-  if(!db.toFavorite(id)){
+  if (!db.toFavorite(id)) {
     ctx.response.status = 500;
     ctx.response.body = 'Message with this id is not found';
     return
@@ -90,8 +90,8 @@ function toFavorite(ctx){
 
 
 function getPinMsg(ctx) {
-const pin = db.getPinMsg();
-  if (!pin) {
+  const pin = db.getPinMsg();
+  if (!pin || !pin.content) {
     ctx.response.status = 201;
     ctx.response.body = 'Pin was not found';
     return;
@@ -116,22 +116,43 @@ function putPinMsg(ctx) {
   ctx.response.body = JSON.stringify(pin)
 }
 
-function deletePinMsg(ctx){
-  const pin = db.deletePinMsg()
-  if(pin){
+function deletePinMsg(ctx) {
+  const pinDelete = db.deletePinMsg()
+  if (pinDelete) {
     ctx.response.status = 500;
     ctx.response.body = 'Something is wrong';
   }
   ctx.response.body = 'ok'
 }
 
+function deleteMessage(ctx) {
+  const id = ctx.params.id;
+  const result = db.deleteMsg(id)
+  //console.log('result', result)
+  if (!result.isMessageDeleted && result.text) {
+    ctx.response.status = 500;
+    ctx.response.body = result.text;
+    return
+  }
+
+  if (result.href) {
+    const isContentDeleted = storage.deleteData(result.href)
+    //console.log('isContentDeleted', isContentDeleted)
+    if (!isContentDeleted.result) {
+      ctx.response.status = 500;
+      ctx.response.body = isContentDeleted.text;
+    }
+  }
+
+  ctx.response.body = 'ok';
+}
 
 module.exports = function (router, database, fileStorage) {
   db = database;
   storage = fileStorage;
 
   router.get('/api/messages', getLastMsgList);
-  //router.get('/api/messages/pin', getPinMsg);
+  router.get('/api/messages/pin', getPinMsg);
   router.put('/api/messages/pin', putPinMsg);
   //router.get('/api/messages/by_type', getListMsgBySearchElem);
   //router.get('/api/messages/by_type/:type', getMsgList);
@@ -139,7 +160,8 @@ module.exports = function (router, database, fileStorage) {
   router.post('/api/messages/file', createNewFileMsg);
   //router.put('/api/messages/:id', updateMsg);
   router.patch('/api/messages/:id', toFavorite);
-  //router.delete('/api/messages/pin', deletePinMsg);
+  router.delete('/api/messages/pin', deletePinMsg);
+  router.delete('/api/messages/:id', deleteMessage)
 }
 
 

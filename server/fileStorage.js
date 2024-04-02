@@ -9,8 +9,8 @@ class FileStorage {
     this.path = path;
   }
 
-  getPath(name) {
-    return {contentPath: `${this.path}/${name}`, typePath: `${this.path}/${name}.meta`};
+  getPath(id) {
+    return {contentPath: `${this.path}/${id}`, typePath: `${this.path}/${id}.meta`};
   }
 
   putData(content, type,name) {
@@ -36,8 +36,15 @@ class FileStorage {
     return {meta, content}
   }
 
-  deleteData(name) {
-    //////// TODO
+  deleteData(id) {
+   console.log('deleteData', id)
+    const path = `${this.path}/${id}`;
+   const metaPath = `${this.path}/${id}.meta`;
+    if(!fs.existsSync(path) || !fs.existsSync(metaPath) ) return {result:false, text: 'Content was not found'}
+    fs.rmSync(`${this.path}/${id}`)
+    fs.rmSync(`${this.path}/${id}.meta`)
+    if(fs.existsSync(path) || fs.existsSync(metaPath)) return {result:false, text: 'Content was not delete'}
+    return {result:true,text:null}
   }
 }
 

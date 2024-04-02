@@ -46,9 +46,9 @@ class DataBase {
   }
 
   deletePinMsg() {
-    this.data.pin = null;
+    this.data.pin = {};
     this.saveData()
-    return this.data.pin;
+    return null;
   }
 
   getLastMsgList(start, limit, text, type, favorite) {
@@ -69,10 +69,10 @@ class DataBase {
   }
 
   toFavorite(id) {
-   if(!this.data.messages[id]) return false
+    if (!this.data.messages[id]) return false
     this.data.messages[id].isFavorite = true;
     this.saveData()
-   return true
+    return true
   }
 
   getOneMsg(id) {
@@ -98,12 +98,14 @@ class DataBase {
   }
 
   deleteMsg(id) {
-    if (!this.data.messages[id]) return false
+    const message = this.data.messages[id]
+    //console.log('message',message)
+    if (!message) return {isMessageDeleted: false, href: null, text: 'Message was not found'}
     delete this.data.messages[id];
     this.saveData();
-    return true
+    if (!message.content.id) return {isMessageDeleted: true, href: null, text: null}
+    return {isMessageDeleted: false, href: message.content.id, text: null}
   }
-
 
 }
 
