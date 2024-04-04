@@ -1,0 +1,34 @@
+{
+  "name": "chaos-organizer-server",
+  "version": "1.0.0",
+  "description": "organaizer server",
+  "main": "webpack.config.js",
+  "scripts": {
+    "test": "no",
+    "nodemon": "nodemon ./server.js localhost 7070"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/0spailona/Chaos-Organizer-Server.git"
+  },
+  "author": "0spailona",
+  "license": "ISC",
+  "dependencies": {
+    "@koa/cors": "^5.0.0",
+    "koa": "^2.13.1",
+    "koa-body": "^4.2.0",
+    "koa-bodyparser": "^4.4.1",
+    "koa-router": "^12.0.1",
+    "koa-session": "^6.4.0",
+    "koa-static": "^5.0.0",
+    "raw-body": "^2.5.2",
+    "uuid": "^8.3.2"
+  },
+  "bugs": {
+    "url": "https://github.com/0spailona/Chaos-Organizer-Server/issues"
+  },
+  "homepage": "https://github.com/0spailona/Chaos-Organizer-Server#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.0"
+  }
+}
