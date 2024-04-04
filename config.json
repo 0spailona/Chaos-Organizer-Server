@@ -1,5 +1,5 @@
 {
   "listenPort": 7070,
-  "databasePath": "./saveData.json",
-  "fileStoragePath": "./storage"
+  "databasePath": "./userData",
+  "fileStoragePath": "./userData/storage"
 }

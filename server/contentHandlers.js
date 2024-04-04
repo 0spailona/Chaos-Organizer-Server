@@ -1,9 +1,7 @@
-let db = null;
-let storage = null;
 
 function getContent(ctx) {
-  console.log('params',ctx.params.id)
-  const {meta, content} = storage.getData(ctx.params.id);
+  //console.log('params',ctx.params.id)
+  const {meta, content} = ctx.storage.getData(ctx.params.id) ?? {};
   if (!content) {
     ctx.response.status = 404;
     ctx.response.body = 'Content is not found';
@@ -14,9 +12,7 @@ function getContent(ctx) {
   ctx.response.body = content;
 }
 
-module.exports = function (router, database, fileStorage) {
-  db = database;
-  storage = fileStorage;
+module.exports = function (router) {
 
   router.get('/api/content/:id', getContent);
   //router.get('/api/messages/by_type/:type', getMsgList);

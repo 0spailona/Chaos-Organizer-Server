@@ -35,7 +35,7 @@ class DataBase {
   putPinMsg(id) {
     const pin = Object.values(this.data.messages).find(x => x.id === id);
     if (!pin) return null;
-    console.log('pin', pin)
+    //console.log('pin', pin)
     this.data.pin = pin;
     this.saveData()
     return pin;
@@ -58,8 +58,14 @@ class DataBase {
 
     if (text) arr = arr.filter(x => x.content.text?.includes(text));
 
-    if (type) arr = arr.filter(x => x.type?.includes(type));
-
+    if (type && type !== 'anotherType') arr = arr.filter(x => x.type?.includes(type));
+    if(type && type === 'anotherType'){
+      arr = arr.filter(x => x.content.id);
+      arr = arr.filter(x => !x.type?.includes('video/'));
+      arr = arr.filter(x => !x.type?.includes('audio/'));
+      arr = arr.filter(x => !x.type?.includes('image/'));
+    }
+    //console.log('db getLastMsgList', arr)
     if (favorite) {
       arr = arr.filter(x => x.isFavorite);
     }

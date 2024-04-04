@@ -1,6 +1,3 @@
-let db = null;
-let storage = null
-
 function getRequestContentValue(ctx) {
   const contentType = ctx.request.header['content-type'];
 
@@ -8,12 +5,12 @@ function getRequestContentValue(ctx) {
     ? ctx.request.body
     : ctx.rawRequestBody;
 
-  const name = ctx.request.header['x-file-name']
+  const name = decodeURI(ctx.request.header['x-file-name'])
 
   return {
-    text: ctx.request.header['x-file-describe'],
+    text: decodeURI(ctx.request.header['x-file-describe']),
     name: name,
-    id: `${storage.putData(body, contentType, name)}`
+    id: `${ctx.storage.putData(body, contentType, name)}`
   };
 
 }
@@ -31,7 +28,7 @@ function createNewFileMsg(ctx) {
     type: ctx.request.header['content-type'],
   };
   //console.log(message)
-  const saveMsg = db.createSaveMsg(message)
+  const saveMsg = ctx.db.createSaveMsg(message)
   //console.log('saveMsg', saveMsg)
   if (!saveMsg) {
     ctx.response.status = 500;
@@ -50,7 +47,7 @@ function createNewTextMsg(ctx) {
     type: ctx.request.header['content-type'],
   };
   //console.log(message)
-  const saveMsg = db.createSaveMsg(message)
+  const saveMsg = ctx.db.createSaveMsg(message)
   //console.log('saveMsg', saveMsg)
   if (!saveMsg) {
     ctx.response.status = 500;
@@ -62,6 +59,8 @@ function createNewTextMsg(ctx) {
 }
 
 function getLastMsgList(ctx) {
+
+
   const start = ctx.query.start;
   const limit = ctx.query.limit;
   // console.log('start',start,'limit',limit)
@@ -69,7 +68,8 @@ function getLastMsgList(ctx) {
   const type = ctx.query.type;
   const favorite = ctx.query.favorite;
 
-  const list = db.getLastMsgList(start, limit, text, type, favorite)
+  //console.log('text',text)
+  const list = ctx.db.getLastMsgList(start, limit, text, type, favorite)
   if (!list) {
     ctx.response.status = 500;
     ctx.response.body = 'Something is wrong';
@@ -80,7 +80,7 @@ function getLastMsgList(ctx) {
 
 function toFavorite(ctx) {
   const id = ctx.params.id;
-  if (!db.toFavorite(id)) {
+  if (!ctx.db.toFavorite(id)) {
     ctx.response.status = 500;
     ctx.response.body = 'Message with this id is not found';
     return
@@ -90,9 +90,9 @@ function toFavorite(ctx) {
 
 
 function getPinMsg(ctx) {
-  const pin = db.getPinMsg();
+  const pin = ctx.db.getPinMsg();
   if (!pin || !pin.content) {
-    ctx.response.status = 201;
+    ctx.response.status = 404;
     ctx.response.body = 'Pin was not found';
     return;
   }
@@ -107,7 +107,7 @@ function putPinMsg(ctx) {
     return;
   }
   //console.log('id pin', id)
-  const pin = db.putPinMsg(id);
+  const pin = ctx.db.putPinMsg(id);
   if (!pin) {
     ctx.response.status = 500;
     ctx.response.body = 'Message with such id was not found';
@@ -117,7 +117,7 @@ function putPinMsg(ctx) {
 }
 
 function deletePinMsg(ctx) {
-  const pinDelete = db.deletePinMsg()
+  const pinDelete = ctx.db.deletePinMsg()
   if (pinDelete) {
     ctx.response.status = 500;
     ctx.response.body = 'Something is wrong';
@@ -127,7 +127,7 @@ function deletePinMsg(ctx) {
 
 function deleteMessage(ctx) {
   const id = ctx.params.id;
-  const result = db.deleteMsg(id)
+  const result = ctx.db.deleteMsg(id)
   //console.log('result', result)
   if (!result.isMessageDeleted && result.text) {
     ctx.response.status = 500;
@@ -136,7 +136,7 @@ function deleteMessage(ctx) {
   }
 
   if (result.href) {
-    const isContentDeleted = storage.deleteData(result.href)
+    const isContentDeleted = ctx.storage.deleteData(result.href)
     //console.log('isContentDeleted', isContentDeleted)
     if (!isContentDeleted.result) {
       ctx.response.status = 500;
@@ -147,10 +147,7 @@ function deleteMessage(ctx) {
   ctx.response.body = 'ok';
 }
 
-module.exports = function (router, database, fileStorage) {
-  db = database;
-  storage = fileStorage;
-
+module.exports = function (router) {
   router.get('/api/messages', getLastMsgList);
   router.get('/api/messages/pin', getPinMsg);
   router.put('/api/messages/pin', putPinMsg);
@@ -164,26 +161,9 @@ module.exports = function (router, database, fileStorage) {
   router.delete('/api/messages/:id', deleteMessage)
 }
 
-
-/*function getListMsgBySearchElem(ctx){
-  const searchElem = ctx.query.searchElem;
-  console.log('searchElem msgHandler',searchElem)
-  if(searchElem === '' || searchElem === ' '){
-    ctx.response.status = 400;
-    ctx.response.body = 'Uncorrected element for query';
-    return
-  }
-  const list = db.getMsgListBySearchElem(searchElem);
-  console.log('list query', list)
-  if(list.length === 0){
-    ctx.response.body = 'Nothing was found for your query';
-    return
-  }
-  //ctx.response.body = JSON.stringify(list)
-}*/
 /*function getOneMsg(ctx) {
   const id = ctx.params.id;
-  const msg = db.getOneMsg(id);
+  const msg = ctx.db.getOneMsg(id);
   if (!msg) {
     ctx.response.status = 404;
     ctx.response.body = 'Message is not found';
@@ -192,20 +172,10 @@ module.exports = function (router, database, fileStorage) {
   ctx.response.body = JSON.stringify(msg);
 }*/
 
-/*function getMsgList(ctx) {
-  const searchData = ctx.request.body;
-  const list = db.getMsgList(searchData);
-  if (!list) {
-    ctx.response.status = 404;
-    ctx.response.body = 'Messages is not found';
-    return;
-  }
-  ctx.response.body = JSON.stringify(list);
-}*/
 
 /*function updateMsg(ctx) {
   const data = ctx.request.body;
-  const msg = db.updateMsg(data);
+  const msg = ctx.db.updateMsg(data);
   if (!msg) {
     ctx.response.status = 404;
     ctx.response.body = 'Message is not update';
@@ -215,14 +185,4 @@ module.exports = function (router, database, fileStorage) {
   ctx.response.body = JSON.stringify(msg);
 }*/
 
-/*function deleteMsg(ctx) {
-  const id = ctx.params.id;
-  const msg = db.deleteMsg(id);
-  if (!msg) {
-    ctx.response.status = 404;
-    ctx.response.body = 'Message is not delete';
-    return;
-  }
-  ctx.response.body = msg;
-}*/
 

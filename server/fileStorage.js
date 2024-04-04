@@ -3,9 +3,6 @@ const uuid = require('uuid')
 
 class FileStorage {
   constructor(path) {
-    if (!fs.existsSync(path)) {
-      fs.mkdirSync(path, {recursive: true});
-    }
     this.path = path;
   }
 
@@ -14,8 +11,10 @@ class FileStorage {
   }
 
   putData(content, type,name) {
-
-    const id = uuid.v4();
+    if (!fs.existsSync(this.path)) {
+      fs.mkdirSync(this.path, {recursive: true});
+    }
+   const id = uuid.v4();
     const data = JSON.stringify({type,name})
     fs.writeFileSync(`${this.path}/${id}`, content);
     fs.writeFileSync(`${this.path}/${id}.meta`, data, "utf-8")
@@ -23,7 +22,7 @@ class FileStorage {
   }
 
   getData(id) {
-    console.log('id', id)
+    //console.log('id', id)
     const {contentPath, typePath} = this.getPath(id);
 
     if (!fs.existsSync(contentPath) || !fs.existsSync(typePath)) return null
@@ -31,15 +30,15 @@ class FileStorage {
     const content = fs.readFileSync(`${this.path}/${id}`);
     const meta = JSON.parse(fs.readFileSync(`${this.path}/${id}.meta`, "utf-8"));
 
-    console.log('meta', meta)
+    //console.log('meta', meta)
 
     return {meta, content}
   }
 
   deleteData(id) {
-   console.log('deleteData', id)
+   //console.log('deleteData', id)
     const path = `${this.path}/${id}`;
-   const metaPath = `${this.path}/${id}.meta`;
+    const metaPath = `${this.path}/${id}.meta`;
     if(!fs.existsSync(path) || !fs.existsSync(metaPath) ) return {result:false, text: 'Content was not found'}
     fs.rmSync(`${this.path}/${id}`)
     fs.rmSync(`${this.path}/${id}.meta`)
