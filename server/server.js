@@ -71,9 +71,11 @@ app.use(koaBody({
 }));
 
 const router = new Router();
+router.get("/", ctx => ctx.response.body = "I'm alive");
 
 require("./messageHandlers")(router);
 require("./contentHandlers")(router);
+
 
 app.use(router.routes()).use(router.allowedMethods());
 
