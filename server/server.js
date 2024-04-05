@@ -39,7 +39,7 @@ const koaSessionConfig = {
   /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false)*/
   secure: false,
   /** (boolean) secure cookie*/
-  sameSite: null, /** (string) session cookie sameSite options (default null, don't set it) */
+  sameSite: 'None', /** (string) session cookie sameSite options (default null, don't set it) */
 };
 
 app.use(session(koaSessionConfig, app));
