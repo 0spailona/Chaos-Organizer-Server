@@ -29,7 +29,7 @@ const koaSessionConfig = {
   /** (boolean) automatically commit headers (default true) */
   overwrite: true,
   /** (boolean) can overwrite or not (default true) */
-  httpOnly: true,
+  httpOnly: false,
   /** (boolean) httpOnly or not (default true) */
   signed: false,
   /** (boolean) signed or not (default true) */
