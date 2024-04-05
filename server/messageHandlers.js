@@ -1,3 +1,8 @@
+const fs = require("fs");
+const dataConfig = fs.readFileSync("./config.json", "utf8");
+const config = JSON.parse(dataConfig);
+console.log('dataConfig',config)
+
 function getRequestContentValue(ctx) {
   const contentType = ctx.request.header["content-type"];
 
@@ -156,6 +161,15 @@ function deleteMessage(ctx) {
   ctx.response.body = "ok";
 }
 
+function resetMessages(ctx) {
+  fs.rmSync(ctx.storage.path, {recursive: true, force: true});
+  fs.rmSync(ctx.db.path, {recursive: true, force: true});
+  fs.cpSync(`${config['defaultUserData']}/storage/default`, ctx.storage.path, {recursive: true});
+  fs.cpSync(`${config['defaultUserData']}/default.json`, ctx.db.path, {recursive: true});
+
+  ctx.response.body = "ok";
+}
+
 module.exports = function (router) {
   router.get("/api/messages", getLastMsgList);
   router.get("/api/messages/pin", getPinMsg);
@@ -165,6 +179,7 @@ module.exports = function (router) {
   router.patch("/api/messages/:id", toFavorite);
   router.delete("/api/messages/pin", deletePinMsg);
   router.delete("/api/messages/:id", deleteMessage);
+  router.post("/api/messages/reset", resetMessages);
 };
 
 

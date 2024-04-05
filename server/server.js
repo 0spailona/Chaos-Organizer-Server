@@ -48,6 +48,7 @@ app.use(function* (next) {
   if (!this.session.id) {
     this.session.id = uuid.v4().toString();
   }
+  console.log(this.session.id, this.request.url);
 
   this.db = new Database(`${config.databasePath}/${this.session.id}.json`);
   this.storage = new FileStorage(`${config.fileStoragePath}/${this.session.id}`);
