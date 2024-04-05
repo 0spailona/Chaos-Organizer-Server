@@ -19,39 +19,12 @@ app.use(cors({
   credentials: true
 }));
 
-const koaSessionConfig = {
-  key: "koa.sess", /** (string) cookie key (default is koa.sess) */
-  /** (number || 'session') maxAge in ms (default is 1 days) */
-  /** 'session' will result in a cookie that expires when session/browser is closed */
-  /** Warning: If a session cookie is stolen, this cookie will never expire */
-  maxAge: 8640000000,
-  autoCommit: true,
-  /** (boolean) automatically commit headers (default true) */
-  overwrite: true,
-  /** (boolean) can overwrite or not (default true) */
-  httpOnly: false,
-  /** (boolean) httpOnly or not (default true) */
-  signed: false,
-  /** (boolean) signed or not (default true) */
-  rolling: true,
-  /** (boolean) Force a session identifier cookie to be set on every response. The expiration is reset to the original maxAge, resetting the expiration countdown. (default is false) */
-  renew: false,
-  /** (boolean) renew session when session is nearly expired, so we can always keep user logged in. (default is false)*/
-  secure: true,
-  /** (boolean) secure cookie*/
-  sameSite: 'None', /** (string) session cookie sameSite options (default null, don't set it) */
-};
-
-app.use(session(koaSessionConfig, app));
-
 app.use(function* (next) {
-  if (!this.session.id) {
-    this.session.id = uuid.v4().toString();
-  }
-  console.log(this.session.id, this.request.url);
+  console.log(this.request.url);
 
-  this.db = new Database(`${config.databasePath}/${this.session.id}.json`);
-  this.storage = new FileStorage(`${config.fileStoragePath}/${this.session.id}`);
+  // TODO: add user session later
+  this.db = new Database(`${config.databasePath}/db.json`);
+  this.storage = new FileStorage(`${config.fileStoragePath}`);
   yield next;
 });
 
