@@ -1,8 +1,9 @@
 const Koa = require("koa");
 const Router = require("koa-router");
-const session = require("koa-session");
+//const session = require("koa-session");
 const cors = require("@koa/cors");
 const uuid = require("uuid");
+const Emitter = require("component-emitter");
 
 const koaBody = require("koa-body");
 
@@ -12,6 +13,7 @@ const FileStorage = require("./fileStorage");
 const fs = require("fs");
 const dataConfig = fs.readFileSync("./config.json", "utf8");
 const config = JSON.parse(dataConfig);
+const emitter = new Emitter();
 
 const app = new Koa();
 
@@ -21,10 +23,9 @@ app.use(cors({
 
 app.use(function* (next) {
   console.log(this.request.url);
-
-  // TODO: add user session later
-  this.db = new Database(`${config.databasePath}/db.json`);
+  this.db = new Database(`${config.databasePath}/db.json`,emitter);
   this.storage = new FileStorage(`${config.fileStoragePath}`);
+  this.emitter = emitter
   yield next;
 });
 
@@ -48,11 +49,13 @@ router.get("/", ctx => ctx.response.body = "I'm alive");
 
 require("./messageHandlers")(router);
 require("./contentHandlers")(router);
-
+require("./streamEvents")(router);
 
 app.use(router.routes()).use(router.allowedMethods());
+
 
 const port = config.listenPort;
 app.listen(port, () => {
   console.log("Server running on port 7070");
 });
+

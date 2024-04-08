@@ -2,10 +2,13 @@ const fs = require("fs");
 const uuid = require("uuid");
 const {descendingBy} = require("./utils");
 
-class DataBase {
-  constructor(path) {
+class DataBase{
+  constructor(path,emitter) {
     this.path = path;
     this.loadData();
+    this.emitter = emitter
+    //this.on('addMessage',()=> this.emit('newMessage'))
+
   }
 
   loadData() {
@@ -18,6 +21,7 @@ class DataBase {
   }
 
   saveData() {
+    //this.emit('change')
     const saveData = JSON.stringify(this.data);
     fs.writeFileSync(this.path, saveData, "utf8");
   }
@@ -28,6 +32,7 @@ class DataBase {
     msg.isFavorite = false;
     this.data.messages[msg.id] = msg;
     this.saveData();
+    this.emitter.emit('message', {msg,event:'newMessage'})
     return msg;
   }
 
@@ -37,6 +42,7 @@ class DataBase {
       return null;
     }
     this.data.pin = pin;
+    this.emitter.emit('message',{pin,event:'setNewPin'})
     this.saveData();
     return pin;
   }
@@ -47,12 +53,13 @@ class DataBase {
 
   deletePinMsg() {
     this.data.pin = {};
+    this.emitter.emit('message',{pin:null,event:'upPinMsg'})
     this.saveData();
     return null;
   }
 
   getLastMsgList(start, limit, text, type, favorite) {
-
+    console.log('getLastMsgList',type)
     let arr = Object.values(this.data.messages);
     if (arr.length === 0) {
       return arr;
@@ -63,6 +70,7 @@ class DataBase {
     }
 
     if (type && type !== "anotherType") {
+
       arr = arr.filter(x => x.type?.includes(type));
     }
     if (type && type === "anotherType") {
@@ -101,6 +109,10 @@ class DataBase {
       return {isMessageDeleted: true, href: null, text: null};
     }
     return {isMessageDeleted: false, href: message.content.id, text: null};
+  }
+
+  onDeleteMessage(id){
+    this.emitter.emit('message', {id,event:'deleteMessage'})
   }
 }
 

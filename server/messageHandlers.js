@@ -1,7 +1,8 @@
 const fs = require("fs");
 const dataConfig = fs.readFileSync("./config.json", "utf8");
 const config = JSON.parse(dataConfig);
-console.log('dataConfig',config)
+
+//.log('dataConfig',config)
 
 function getRequestContentValue(ctx) {
   const contentType = ctx.request.header["content-type"];
@@ -157,15 +158,15 @@ function deleteMessage(ctx) {
       ctx.response.body = isContentDeleted.text;
     }
   }
-
+  ctx.db.onDeleteMessage(id);
   ctx.response.body = "ok";
 }
 
 function resetMessages(ctx) {
   fs.rmSync(ctx.storage.path, {recursive: true, force: true});
   fs.rmSync(ctx.db.path, {recursive: true, force: true});
-  fs.cpSync(`${config['defaultUserData']}/storage/default`, ctx.storage.path, {recursive: true});
-  fs.cpSync(`${config['defaultUserData']}/default.json`, ctx.db.path, {recursive: true});
+  fs.cpSync(`${config["defaultUserData"]}/storage/default`, ctx.storage.path, {recursive: true});
+  fs.cpSync(`${config["defaultUserData"]}/default.json`, ctx.db.path, {recursive: true});
 
   ctx.response.body = "ok";
 }
