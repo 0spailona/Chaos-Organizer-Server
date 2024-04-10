@@ -2,8 +2,6 @@ const fs = require("fs");
 const dataConfig = fs.readFileSync("./config.json", "utf8");
 const config = JSON.parse(dataConfig);
 
-//.log('dataConfig',config)
-
 function getRequestContentValue(ctx) {
   const contentType = ctx.request.header["content-type"];
 
@@ -93,9 +91,10 @@ function getLastMsgList(ctx) {
   ctx.response.body = JSON.stringify(list);
 }
 
-function toFavorite(ctx) {
+function toAndFromFavorite(ctx) {
   const id = ctx.params.id;
-  if (!ctx.db.toFavorite(id)) {
+  const isFavorite = JSON.parse(ctx.request.body)
+  if (!ctx.db.toFavorite(id,isFavorite)) {
     ctx.response.status = 500;
     ctx.response.body = "Message with this id is not found";
     return;
@@ -177,7 +176,7 @@ module.exports = function (router) {
   router.put("/api/messages/pin", putPinMsg);
   router.post("/api/messages/text", createNewTextMsg);
   router.post("/api/messages/file", createNewFileMsg);
-  router.patch("/api/messages/:id", toFavorite);
+  router.patch("/api/messages/:id", toAndFromFavorite);
   router.delete("/api/messages/pin", deletePinMsg);
   router.delete("/api/messages/:id", deleteMessage);
   router.post("/api/messages/reset", resetMessages);

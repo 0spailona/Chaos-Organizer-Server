@@ -1,6 +1,5 @@
 const Koa = require("koa");
 const Router = require("koa-router");
-//const session = require("koa-session");
 const cors = require("@koa/cors");
 const uuid = require("uuid");
 const Emitter = require("component-emitter");

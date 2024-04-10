@@ -2,13 +2,11 @@ const fs = require("fs");
 const uuid = require("uuid");
 const {descendingBy} = require("./utils");
 
-class DataBase{
-  constructor(path,emitter) {
+class DataBase {
+  constructor(path, emitter) {
     this.path = path;
     this.loadData();
-    this.emitter = emitter
-    //this.on('addMessage',()=> this.emit('newMessage'))
-
+    this.emitter = emitter;
   }
 
   loadData() {
@@ -21,7 +19,6 @@ class DataBase{
   }
 
   saveData() {
-    //this.emit('change')
     const saveData = JSON.stringify(this.data);
     fs.writeFileSync(this.path, saveData, "utf8");
   }
@@ -32,7 +29,7 @@ class DataBase{
     msg.isFavorite = false;
     this.data.messages[msg.id] = msg;
     this.saveData();
-    this.emitter.emit('message', {msg,event:'newMessage'})
+    this.emitter.emit("message", {msg, event: "newMessage"});
     return msg;
   }
 
@@ -42,7 +39,7 @@ class DataBase{
       return null;
     }
     this.data.pin = pin;
-    this.emitter.emit('message',{pin,event:'setNewPin'})
+    this.emitter.emit("message", {pin, event: "setNewPin"});
     this.saveData();
     return pin;
   }
@@ -53,13 +50,12 @@ class DataBase{
 
   deletePinMsg() {
     this.data.pin = {};
-    this.emitter.emit('message',{pin:null,event:'upPinMsg'})
+    this.emitter.emit("message", {pin: null, event: "upPinMsg"});
     this.saveData();
     return null;
   }
 
   getLastMsgList(start, limit, text, type, favorite) {
-    console.log('getLastMsgList',type)
     let arr = Object.values(this.data.messages);
     if (arr.length === 0) {
       return arr;
@@ -88,11 +84,17 @@ class DataBase{
     return saveDataSorted.splice(start, limit);
   }
 
-  toFavorite(id) {
+  toFavorite(id, isFavorite) {
     if (!this.data.messages[id]) {
       return false;
     }
-    this.data.messages[id].isFavorite = true;
+    this.data.messages[id].isFavorite = isFavorite;
+    if (isFavorite) {
+      this.emitter.emit("message", {msg: this.data.messages[id], event: "onToFavorite"});
+    }
+    else {
+      this.emitter.emit("message", {id, event: "onUnFavorite"});
+    }
     this.saveData();
     return true;
   }
@@ -111,8 +113,8 @@ class DataBase{
     return {isMessageDeleted: false, href: message.content.id, text: null};
   }
 
-  onDeleteMessage(id){
-    this.emitter.emit('message', {id,event:'deleteMessage'})
+  onDeleteMessage(id) {
+    this.emitter.emit("message", {id, event: "deleteMessage"});
   }
 }
 
